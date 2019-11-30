@@ -1,8 +1,10 @@
+import java.util.stream.StreamSupport;
+
 import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
 import edu.princeton.cs.algs4.Digraph;
 
 public class SAP {
-	final private Digraph graph;
+	private final Digraph graph;
 	private int minDist;
 	private int ancestor;
 
@@ -69,7 +71,8 @@ public class SAP {
 	// length of shortest ancestral path between any vertex in v and any vertex in
 	// w; -1 if no such path
 	public int length(Iterable<Integer> v, Iterable<Integer> w) {
-		if (v == null || w == null) {
+		if (v == null || StreamSupport.stream(v.spliterator(), false).anyMatch(val -> val == null) || w == null
+				|| StreamSupport.stream(w.spliterator(), false).anyMatch(val -> val == null)) {
 			throw new IllegalArgumentException("arg is null");
 		}
 
@@ -80,7 +83,8 @@ public class SAP {
 	// a common ancestor that participates in shortest ancestral path; -1 if no such
 	// path
 	public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-		if (v == null || w == null) {
+		if (v == null || StreamSupport.stream(v.spliterator(), false).anyMatch(val -> val == null) || w == null
+				|| StreamSupport.stream(w.spliterator(), false).anyMatch(val -> val == null)) {
 			throw new IllegalArgumentException("arg is null");
 		}
 

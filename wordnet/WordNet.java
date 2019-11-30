@@ -1,14 +1,15 @@
 import java.util.ArrayList;
 
+import edu.princeton.cs.algs4.DirectedCycle;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.ST;
+import edu.princeton.cs.algs4.Topological;
 
 public class WordNet {
-	final private ST<Integer, String> synsets;
-	final private ST<String, ArrayList<Integer>> words;
-	final private Digraph graph;
-	final private SAP sap;
+	private final ST<Integer, String> synsets;
+	private final ST<String, ArrayList<Integer>> words;
+	private final SAP sap;
 
 	// constructor takes the name of the two input files
 	public WordNet(String synsets, String hypernyms) {
@@ -24,11 +25,11 @@ public class WordNet {
 		String line = s.readLine();
 		int nbLines = 0;
 		while (line != null) {
-			String[] l = line.split(",");
-			int id = Integer.parseInt(l[0]);
+			String[] lineArr = line.split(",");
+			int id = Integer.parseInt(lineArr[0]);
 
-			this.synsets.put(id, l[1]);
-			for (String word : l[1].split(" ")) {
+			this.synsets.put(id, lineArr[1]);
+			for (String word : lineArr[1].split(" ")) {
 				ArrayList<Integer> ids;
 
 				if (this.words.contains(word)) {
@@ -45,21 +46,27 @@ public class WordNet {
 			line = s.readLine();
 		}
 
-		this.graph = new Digraph(nbLines);
+		Digraph graph = new Digraph(nbLines);
 
 		line = w.readLine();
 		while (line != null) {
-			String[] l = line.split(",");
-			int id = Integer.parseInt(l[0]);
+			String[] lineArr = line.split(",");
+			int id = Integer.parseInt(lineArr[0]);
 
-			for (int i = 1; i < l.length; i++) {
-				this.graph.addEdge(id, Integer.parseInt(l[i]));
+			for (int i = 1; i < lineArr.length; i++) {
+				graph.addEdge(id, Integer.parseInt(lineArr[i]));
 			}
 
 			line = w.readLine();
 		}
 
-		this.sap = new SAP(this.graph);
+		DirectedCycle directedCycle = new DirectedCycle(graph);
+		Topological topological = new Topological(graph);
+		if (directedCycle.hasCycle() || !topological.hasOrder()) {
+			throw new IllegalArgumentException("graph isn't DAG");
+		}
+
+		this.sap = new SAP(graph);
 	}
 
 	// returns all WordNet nouns
@@ -79,7 +86,7 @@ public class WordNet {
 	// distance between nounA and nounB (defined below)
 	public int distance(String nounA, String nounB) {
 		if (!this.isNoun(nounA) || !this.isNoun(nounB)) {
-			throw new IllegalArgumentException("word doesn't null");
+			throw new IllegalArgumentException("word doesn't exist");
 		}
 
 		return this.sap.length(this.words.get(nounA), this.words.get(nounB));
@@ -90,7 +97,7 @@ public class WordNet {
 	// in a shortest ancestral path (defined below)
 	public String sap(String nounA, String nounB) {
 		if (!this.isNoun(nounA) || !this.isNoun(nounB)) {
-			throw new IllegalArgumentException("word doesn't null");
+			throw new IllegalArgumentException("word doesn't exist");
 		}
 
 		return this.synsets.get(this.sap.ancestor(this.words.get(nounA), this.words.get(nounB)));
